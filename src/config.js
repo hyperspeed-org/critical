@@ -42,6 +42,7 @@ const schema = Joi.object()
     user: Joi.string(),
     pass: Joi.string(),
     request: Joi.object().unknown(true),
+    ignoreCssFiles: Joi.array(),
     penthouse: Joi.object()
       .keys({
         url: Joi.any().forbidden(),

@@ -398,6 +398,20 @@ async function fetch(uri, options = {}, secure = true) {
   }
 }
 
+function matchesCssHref(href, ignoreCssFiles) {
+  if (!ignoreCssFiles) {
+    return false;
+  }
+
+  for (const ignoredCss of ignoreCssFiles) {
+    if (href.match(ignoredCss))  {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /**
  * Extract stylesheet urls from html document
  * @param {Vinyl} file Vinyl file object (document)
@@ -1048,8 +1062,8 @@ export async function getDocument(filepath, options = {}) {
 
   const document = await vinylize({filepath}, options);
 
-  document.stylesheets = await getStylesheetHrefs(document, options);
-  document.stylesheetsMedia = await getStylesheetsMedia(document, options);
+  document.stylesheets = await getStylesheetHrefs(document);
+  document.stylesheetsMedia = await getStylesheetsMedia(document);
   document.virtualPath = rebase.to || (await getDocumentPath(document, options));
 
   document.cwd = base || process.cwd();
@@ -1084,9 +1098,9 @@ export async function getDocument(filepath, options = {}) {
 export async function getDocumentFromSource(html, options = {}) {
   const {rebase = {}, base} = options;
   const document = await vinylize({html}, options);
-
-  document.stylesheets = await getStylesheetHrefs(document);
   document.stylesheetsMedia = await getStylesheetsMedia(document);
+  document.stylesheets = await getStylesheetHrefs(document, options);
+
   document.virtualPath = rebase.to || (await getDocumentPath(document, options));
   document.cwd = base || process.cwd();
 
