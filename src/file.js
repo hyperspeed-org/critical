@@ -1062,8 +1062,8 @@ export async function getDocument(filepath, options = {}) {
 
   const document = await vinylize({filepath}, options);
 
-  document.stylesheets = await getStylesheetHrefs(document);
-  document.stylesheetsMedia = await getStylesheetsMedia(document);
+  document.stylesheets = await getStylesheetHrefs(document, options);
+  document.stylesheetsMedia = await getStylesheetsMedia(document, options);
   document.virtualPath = rebase.to || (await getDocumentPath(document, options));
 
   document.cwd = base || process.cwd();
@@ -1098,9 +1098,9 @@ export async function getDocument(filepath, options = {}) {
 export async function getDocumentFromSource(html, options = {}) {
   const {rebase = {}, base} = options;
   const document = await vinylize({html}, options);
-  document.stylesheetsMedia = await getStylesheetsMedia(document);
-  document.stylesheets = await getStylesheetHrefs(document, options);
 
+  document.stylesheets = await getStylesheetHrefs(document, options);
+  document.stylesheetsMedia = await getStylesheetsMedia(document, options);
   document.virtualPath = rebase.to || (await getDocumentPath(document, options));
   document.cwd = base || process.cwd();
 

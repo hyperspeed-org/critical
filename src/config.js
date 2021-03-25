@@ -18,6 +18,7 @@ export const DEFAULT = {
   ignoreInlinedStyles: false,
   concurrency: Number.POSITIVE_INFINITY,
   include: [],
+  extractCssImports: false,
 };
 
 const schema = Joi.object()
@@ -43,6 +44,7 @@ const schema = Joi.object()
     pass: Joi.string(),
     request: Joi.object().unknown(true),
     ignoreCssFiles: Joi.array(),
+    extractCssImports: Joi.boolean().default(DEFAULT.extractCssImports),
     penthouse: Joi.object()
       .keys({
         url: Joi.any().forbidden(),
