@@ -4,6 +4,7 @@
   "description": "Extract & Inline Critical-path CSS from HTML",
   "author": "Winxton",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/winxton/critical.git"
