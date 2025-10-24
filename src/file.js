@@ -436,10 +436,16 @@ function getStylesheetObjects(file, options) {
 
   const isMediaQuery = (media) => typeof media === 'string' && !['all', 'print', 'screen'].includes(media);
 
+  // Skip fallbacks that only load when JS is disabled.
+  const isInsideNoscript = (el) => typeof el?.parents === 'function' && el.parents('noscript').length > 0;
+
   const allowedInlinedStylesheet = (type) => type !== 'styles' || !ignoreInlinedStyles;
 
   const objects = stylesheets
-    .filter((link) => isNotPrint(link.$el) && Boolean(link.value) && allowedInlinedStylesheet(link.type))
+    .filter(
+      (link) =>
+        !isInsideNoscript(link.$el) && isNotPrint(link.$el) && Boolean(link.value) && allowedInlinedStylesheet(link.type)
+    )
     .map((link) => {
       const media = isMediaQuery(link.$el.attr('media')) ? link.$el.attr('media') : '';
 
