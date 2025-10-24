@@ -399,17 +399,21 @@ async function fetch(uri, options = {}, secure = true) {
 }
 
 function matchesCssHref(href, ignoreCssFiles) {
-  if (!ignoreCssFiles) {
+  if (!ignoreCssFiles || typeof href !== 'string') {
     return false;
   }
 
-  for (const ignoredCss of ignoreCssFiles) {
-    if (href.match(ignoredCss))  {
-      return true;
+  return ignoreCssFiles.some((ignoredCss) => {
+    if (ignoredCss instanceof RegExp) {
+      return ignoredCss.test(href);
     }
-  }
 
-  return false;
+    if (typeof ignoredCss === 'string') {
+      return href.includes(ignoredCss);
+    }
+
+    return false;
+  });
 }
 
 /**
@@ -419,7 +423,7 @@ function matchesCssHref(href, ignoreCssFiles) {
  * @returns {[string]} Stylesheet urls from document source
  */
 function getStylesheetObjects(file, options) {
-  const {ignoreInlinedStyles} = options || {};
+  const {ignoreInlinedStyles, ignoreCssFiles} = options || {};
   if (!isVinyl(file)) {
     throw new Error('Parameter file needs to be a vinyl object');
   }
@@ -444,7 +448,11 @@ function getStylesheetObjects(file, options) {
   const objects = stylesheets
     .filter(
       (link) =>
-        !isInsideNoscript(link.$el) && isNotPrint(link.$el) && Boolean(link.value) && allowedInlinedStylesheet(link.type)
+        !isInsideNoscript(link.$el) &&
+        isNotPrint(link.$el) &&
+        Boolean(link.value) &&
+        allowedInlinedStylesheet(link.type) &&
+        !matchesCssHref(link.value, ignoreCssFiles)
     )
     .map((link) => {
       const media = isMediaQuery(link.$el.attr('media')) ? link.$el.attr('media') : '';
