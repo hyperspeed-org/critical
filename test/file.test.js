@@ -253,6 +253,95 @@ test('Append stylesheets to vinyl', async () => {
   expect(result[4].length).toBe(0);
 });
 
+describe('noscript stylesheet detection', () => {
+  const extract = async (html) => {
+    const document = await vinylize({html});
+    return getStylesheetHrefs(document);
+  };
+
+  test('skips noscript link and keeps regular links', async () => {
+    expect.assertions(1);
+    const html = `
+      <html>
+        <head>
+          <link rel="stylesheet" href="keep.css">
+          <noscript>
+            <link rel="stylesheet" href="noscript.css">
+          </noscript>
+        </head>
+      </html>`;
+
+    const stylesheets = await extract(html);
+    expect(stylesheets).toEqual(['keep.css']);
+  });
+
+  test('skips multiple noscript blocks', async () => {
+    expect.assertions(1);
+    const html = `
+      <html>
+        <head>
+          <noscript><link rel="stylesheet" href="noscript-1.css"></noscript>
+          <noscript><link rel="stylesheet" href="noscript-2.css"></noscript>
+          <link rel="stylesheet" href="keep.css">
+        </head>
+      </html>`;
+
+    const stylesheets = await extract(html);
+    expect(stylesheets).toEqual(['keep.css']);
+  });
+
+  test('handles noscript tags with attributes', async () => {
+    expect.assertions(1);
+    const html = `
+      <html>
+        <head>
+          <link rel="stylesheet" href="keep.css">
+          <noscript id="fallback" class="noscript-class">
+            <link rel="stylesheet" href="noscript.css">
+          </noscript>
+        </head>
+      </html>`;
+
+    const stylesheets = await extract(html);
+    expect(stylesheets).toEqual(['keep.css']);
+  });
+
+  test('handles uppercase NOSCRIPT tags', async () => {
+    expect.assertions(1);
+    const html = `
+      <html>
+        <head>
+          <link rel="stylesheet" href="keep.css">
+          <NOSCRIPT>
+            <link rel="stylesheet" href="noscript.css">
+          </NOSCRIPT>
+        </head>
+      </html>`;
+
+    const stylesheets = await extract(html);
+    expect(stylesheets).toEqual(['keep.css']);
+  });
+
+  test('removes nested content but keeps outer markup', async () => {
+    expect.assertions(1);
+    const html = `
+      <html>
+        <head>
+          <link rel="stylesheet" href="keep.css">
+          <noscript>
+            <div>
+              <link rel="stylesheet" href="nested.css">
+              <p>No JS message</p>
+            </div>
+          </noscript>
+        </head>
+      </html>`;
+
+    const stylesheets = await extract(html);
+    expect(stylesheets).toEqual(['keep.css']);
+  });
+});
+
 test('Append assets to vinyl', async () => {
   const files = [
     'fixtures/folder/subfolder/head.html',
